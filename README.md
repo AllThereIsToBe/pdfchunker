@@ -15,7 +15,8 @@ The desktop GUI and the CLI both use the same worker-thread chunking engine, so 
 ## Run The Desktop App
 
 ```bash
-cd /Users/yashla-1/pdf-chunker
+git clone https://github.com/AllThereIsToBe/pdfchunker.git
+cd pdfchunker
 npm install
 npm start
 ```
@@ -42,6 +43,12 @@ Build installer artifacts for the current platform:
 ```bash
 npm run dist
 ```
+
+## Automation
+
+- GitHub Actions builds the app on macOS, Windows, and Linux for pushes to `main`, pull requests, and manual runs.
+- Tagged releases using `v*` build and publish release artifacts through `electron-builder`.
+- A lockfile sync workflow writes `package-lock.json` back to the repo automatically when it is missing.
 
 ## CLI Usage
 
