@@ -1,0 +1,69 @@
+{
+  "name": "pdf-chunker",
+  "version": "0.1.0",
+  "description": "Portable PDF chunking desktop app and CLI for splitting large PDFs by pages, output size, or extracted text size.",
+  "type": "module",
+  "main": "./src/gui/main.mjs",
+  "bin": {
+    "pdf-chunker": "./src/cli.mjs"
+  },
+  "scripts": {
+    "start": "electron .",
+    "gui": "electron .",
+    "start:cli": "node ./src/cli.mjs",
+    "test:help": "node ./src/cli.mjs --help",
+    "dist": "electron-builder",
+    "dist:dir": "electron-builder --dir"
+  },
+  "keywords": [
+    "pdf",
+    "split",
+    "chunk",
+    "cli",
+    "gui",
+    "desktop"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.4.296"
+  },
+  "devDependencies": {
+    "electron": "^35.1.5",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.pdfchunker.desktop",
+    "productName": "PDF Chunker",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}

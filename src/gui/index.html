@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Chunker</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="backdrop backdrop-a"></div>
+    <div class="backdrop backdrop-b"></div>
+
+    <main class="app-shell">
+      <section class="hero panel rise">
+        <div>
+          <p class="eyebrow">Desktop PDF chunking</p>
+          <h1>Precision splits for oversized PDFs.</h1>
+          <p class="lede">
+            Split by page count, target file size, or extracted text volume from one
+            desktop window. The underlying engine still runs the heavy work in parallel.
+          </p>
+        </div>
+
+        <div class="hero-metrics">
+          <div class="metric-card">
+            <span class="metric-label">Modes</span>
+            <strong id="metric-modes">3</strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Workers</span>
+            <strong id="metric-workers">-</strong>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Last Run</span>
+            <strong id="metric-last-run">Idle</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <form id="job-form" class="panel control-panel rise">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Job Setup</p>
+              <h2>Source and output</h2>
+            </div>
+            <span class="panel-badge" id="platform-badge">Desktop</span>
+          </div>
+
+          <div id="drop-zone" class="drop-zone">
+            <div>
+              <strong>Drop a PDF here</strong>
+              <p>or use the file picker if you want an exact path.</p>
+            </div>
+            <button type="button" class="secondary-button" id="pick-input">
+              Choose PDF
+            </button>
+          </div>
+
+          <label class="field">
+            <span>Input PDF</span>
+            <div class="inline-field">
+              <input id="input-path" type="text" placeholder="/path/to/file.pdf" />
+              <button type="button" class="ghost-button" id="clear-input">Clear</button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Output folder</span>
+            <div class="inline-field">
+              <input id="output-path" type="text" placeholder="Defaults next to the PDF" />
+              <button type="button" class="ghost-button" id="pick-output">
+                Browse
+              </button>
+            </div>
+          </label>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>File name prefix</span>
+              <input id="prefix" type="text" placeholder="Defaults to the input file name" />
+            </label>
+
+            <label class="field">
+              <span>Workers</span>
+              <input id="jobs" type="number" min="1" step="1" />
+            </label>
+          </div>
+
+          <div class="mode-group">
+            <div class="mode-header">
+              <div>
+                <p class="eyebrow">Chunk Mode</p>
+                <h3>Choose the split strategy</h3>
+              </div>
+            </div>
+
+            <div class="mode-picker" role="radiogroup" aria-label="Chunk mode">
+              <label class="mode-option">
+                <input type="radio" name="mode" value="pages" checked />
+                <span>Pages</span>
+                <small>Fastest and most predictable.</small>
+              </label>
+
+              <label class="mode-option">
+                <input type="radio" name="mode" value="bytes" />
+                <span>File Size</span>
+                <small>Measure real output bytes.</small>
+              </label>
+
+              <label class="mode-option">
+                <input type="radio" name="mode" value="chars" />
+                <span>Text Size</span>
+                <small>Group by extracted text volume.</small>
+              </label>
+            </div>
+
+            <div class="field-grid mode-fields">
+              <label class="field mode-field" data-mode="pages">
+                <span>Pages per chunk</span>
+                <input id="pages-per-chunk" type="number" min="1" step="1" value="25" />
+              </label>
+
+              <label class="field mode-field hidden" data-mode="bytes">
+                <span>Max size per chunk</span>
+                <input id="max-size" type="text" placeholder="25MB" value="25MB" />
+              </label>
+
+              <label class="field mode-field hidden" data-mode="chars">
+                <span>Max extracted characters</span>
+                <input id="max-chars" type="number" min="1" step="1" value="120000" />
+              </label>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle">
+              <input id="overwrite" type="checkbox" />
+              <span>Allow overwrite</span>
+            </label>
+
+            <label class="toggle">
+              <input id="validate" type="checkbox" checked />
+              <span>Validate written chunks</span>
+            </label>
+          </div>
+
+          <div class="action-row">
+            <button type="button" id="plan-button" class="secondary-button">Preview Plan</button>
+            <button type="submit" id="run-button" class="primary-button">Split PDF</button>
+          </div>
+        </form>
+
+        <section class="stack">
+          <div class="panel status-panel rise">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Run Status</p>
+                <h2 id="status-title">Ready</h2>
+              </div>
+              <span id="status-pill" class="status-pill idle">Idle</span>
+            </div>
+
+            <p id="status-message" class="status-message">
+              Choose a PDF, set a mode, and preview or run the split.
+            </p>
+
+            <div class="progress-track">
+              <div id="progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div class="status-footer">
+              <span id="progress-label">No active job.</span>
+              <button type="button" id="open-output" class="ghost-button" disabled>
+                Open Output Folder
+              </button>
+            </div>
+          </div>
+
+          <div class="panel summary-panel rise">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Plan Summary</p>
+                <h2>Chunk preview</h2>
+              </div>
+            </div>
+
+            <div id="summary-cards" class="summary-cards empty">
+              <article class="summary-card">
+                <span class="summary-label">Pages</span>
+                <strong>-</strong>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Chunks</span>
+                <strong>-</strong>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Output</span>
+                <strong>-</strong>
+              </article>
+            </div>
+
+            <div id="warnings-panel" class="warnings-panel hidden"></div>
+
+            <div class="table-wrap">
+              <table class="chunk-table">
+                <thead>
+                  <tr>
+                    <th>Chunk</th>
+                    <th>Pages</th>
+                    <th>Count</th>
+                    <th>Planned</th>
+                    <th>Written</th>
+                    <th>File</th>
+                  </tr>
+                </thead>
+                <tbody id="chunk-table-body">
+                  <tr class="empty-row">
+                    <td colspan="6">No plan yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="./renderer.mjs"></script>
+  </body>
+</html>
